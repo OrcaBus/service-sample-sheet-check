@@ -2,23 +2,18 @@ import { App, Aspects, Stack } from 'aws-cdk-lib';
 import { Annotations, Match } from 'aws-cdk-lib/assertions';
 import { SynthesisMessage } from 'aws-cdk-lib/cx-api';
 import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
-import { DeployStack } from '../infrastructure/stage/deployment-stack';
+import { SampleSheetCheckerStack } from '../infrastructure/stage/stack';
+import { getSampleSheetCheckerProps } from '../infrastructure/stage/config';
 
 function synthesisMessageToString(sm: SynthesisMessage): string {
   return `${sm.entry.data} [${sm.id}]`;
 }
 
-// Picking prod environment to test as it contain the sensitive data
-// const config = getEnvironmentConfig(AppStage.PROD)!;
-
 describe('cdk-nag-stateless-toolchain-stack', () => {
   const app = new App({});
 
-  const deployStack = new DeployStack(app, 'DeployStack', {
-    env: {
-      account: '123456789',
-      region: 'ap-southeast-2',
-    },
+  const deployStack = new SampleSheetCheckerStack(app, 'SampleSheetCheckerStack', {
+    ...getSampleSheetCheckerProps('PROD'),
   });
 
   Aspects.of(deployStack).add(new AwsSolutionsChecks());
@@ -46,7 +41,19 @@ describe('cdk-nag-stateless-toolchain-stack', () => {
 function applyNagSuppression(stack: Stack) {
   NagSuppressions.addStackSuppressions(
     stack,
-    [{ id: 'AwsSolutions-S10', reason: 'not require requests to use SSL' }],
+    [{ id: 'AwsSolutions-IAM4', reason: 'allow to use AWS managed policy' }],
+    true
+  );
+
+  NagSuppressions.addResourceSuppressionsByPath(
+    stack,
+    `/SampleSheetCheckerStack/LogRetentionaae0aa3c5b4d4f87b02d85b201efdd8a/ServiceRole/DefaultPolicy/Resource`,
+    [
+      {
+        id: 'AwsSolutions-IAM5',
+        reason: 'Used to deny aws logs to be sent to cloudwatch logs. ',
+      },
+    ],
     true
   );
 }
