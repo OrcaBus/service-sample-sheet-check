@@ -8,18 +8,18 @@ export class StatelessStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    new DeploymentStackPipeline(this, 'DeploymentStackPipeline', {
+    new DeploymentStackPipeline(this, 'DeploymentPipeline', {
       githubBranch: 'main',
-      githubRepo: 'orcabus/service-sample-sheet-check',
-      stackName: 'Orcabus-SampleSheetCheck',
+      githubRepo: 'service-sample-sheet-check',
       stack: SampleSheetCheckerStack,
+      stackName: 'SampleSheetCheckerStack',
       stackConfig: {
         beta: getSampleSheetCheckerProps('BETA'),
         gamma: getSampleSheetCheckerProps('GAMMA'),
         prod: getSampleSheetCheckerProps('PROD'),
       },
-      pipelineName: 'DeploymentPipeline',
-      cdkSynthCmd: ['pnpm i --frozen-lockfile', 'pnpm cdk-stateful synth'],
+      pipelineName: 'OrcaBus-StatelessSampleSheetCheck',
+      cdkSynthCmd: ['pnpm install --frozen-lockfile --ignore-scripts', 'pnpm cdk synth'],
     });
   }
 }

@@ -7,15 +7,15 @@ import path from 'path';
 import { Architecture, DockerImageCode, DockerImageFunction } from 'aws-cdk-lib/aws-lambda';
 import { RetentionDays } from 'aws-cdk-lib/aws-logs';
 import {
-  ApiGatewayConstruct,
-  ApiGatewayConstructProps,
+  OrcaBusApiGateway,
+  OrcaBusApiGatewayProps,
 } from '@orcabus/platform-cdk-constructs/api-gateway';
 
 export interface SampleSheetCheckerStackProps {
   /**
    * The props for api-gateway
    */
-  apiGatewayConstructProps: ApiGatewayConstructProps;
+  apiGatewayConstructProps: OrcaBusApiGatewayProps;
   /**
    * The domain name of the metadata service
    */
@@ -26,7 +26,7 @@ export class SampleSheetCheckerStack extends Stack {
   constructor(scope: Construct, id: string, props: StackProps & SampleSheetCheckerStackProps) {
     super(scope, id, props);
 
-    const apiGW = new ApiGatewayConstruct(
+    const apiGW = new OrcaBusApiGateway(
       this,
       'OrcaBusAPI-SampleSheetChecker',
       props.apiGatewayConstructProps

@@ -9,6 +9,9 @@ function synthesisMessageToString(sm: SynthesisMessage): string {
   return `${sm.entry.data} [${sm.id}]`;
 }
 
+// Picking prod environment to test as it contain the sensitive data
+// const config = getEnvironmentConfig(AppStage.PROD)!;
+
 describe('cdk-nag-stateless-toolchain-stack', () => {
   const app = new App({});
 
