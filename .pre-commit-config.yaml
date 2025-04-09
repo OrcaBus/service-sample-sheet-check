@@ -7,6 +7,7 @@ repos:
         exclude: ^(pnpm-lock.yaml)
       - id: check-yaml
       - id: detect-aws-credentials
+        args: [ --allow-missing-credentials ]
       - id: detect-private-key
       - id: end-of-file-fixer
       - id: trailing-whitespace
@@ -30,5 +31,5 @@ repos:
     hooks:
       - id: prettier
         name: prettier Format
-        entry: pnpm prettier-check
+        entry: pnpm prettier
         language: system
