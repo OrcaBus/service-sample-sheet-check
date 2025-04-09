@@ -94,7 +94,7 @@ jobs:
 
       - run: pnpm test
 
-  test-app-stateless:
+  test-app:
     runs-on: ubuntu-22.04-arm
     if: ${{ !github.event.pull_request.draft }}
     steps:
