@@ -25,3 +25,10 @@ repos:
     hooks:
       - id: eslint
         exclude: ^(pnpm-lock.yaml)
+
+  - repo: local
+    hooks:
+      - id: prettier
+        name: prettier Format
+        entry: pnpm prettier-check
+        language: system
