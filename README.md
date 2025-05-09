@@ -52,10 +52,10 @@ Example output:
 
 ```sh
 
-OrcaBusMetadataManagerStack
-OrcaBusMetadataManagerStack/DeploymentPipeline/OrcaBusBeta/SampleSheetCheckerStack (OrcaBusBeta-SampleSheetCheckerStack)
-OrcaBusMetadataManagerStack/DeploymentPipeline/OrcaBusGamma/SampleSheetCheckerStack (OrcaBusGamma-SampleSheetCheckerStack)
-OrcaBusMetadataManagerStack/DeploymentPipeline/OrcaBusProd/SampleSheetCheckerStack (OrcaBusProd-SampleSheetCheckerStack)
+OrcaBusStatelessStack
+OrcaBusStatelessStack/DeploymentPipeline/OrcaBusBeta/SampleSheetCheckerStack (OrcaBusBeta-SampleSheetCheckerStack)
+OrcaBusStatelessStack/DeploymentPipeline/OrcaBusGamma/SampleSheetCheckerStack (OrcaBusGamma-SampleSheetCheckerStack)
+OrcaBusStatelessStack/DeploymentPipeline/OrcaBusProd/SampleSheetCheckerStack (OrcaBusProd-SampleSheetCheckerStack)
 ```
 
 ## Linting and Formatting
