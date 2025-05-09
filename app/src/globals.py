@@ -118,10 +118,12 @@ SAMPLE_REGEX_OBJS = {
     # https://regex101.com/r/Yf2t8E/3
     # Use brackets to capture the sample id and the library id
     "unique_id": re.compile("({})_({})".format(SAMPLE_ID_REGEX_STR["sample_id"], LIBRARY_REGEX_STR["id"])),
-    # https://regex101.com/r/pkqI1n/1
-    "topup": re.compile(EXPERIMENT_REGEX_STR["top_up"]),
+    # # https://regex101.com/r/pkqI1n/1
+    # "topup": re.compile(EXPERIMENT_REGEX_STR["top_up"]),
     # https://regex101.com/r/nNPwQu/1
-    "year": re.compile(LIBRARY_REGEX_STR["year"])
+    "year": re.compile(LIBRARY_REGEX_STR["year"]),
+    "topup_or_rerun": re.compile("{}|{}".format(EXPERIMENT_REGEX_STR["top_up"], EXPERIMENT_REGEX_STR["rerun"]))
+
 }
 
 SAMPLESHEET_REGEX_STR = {

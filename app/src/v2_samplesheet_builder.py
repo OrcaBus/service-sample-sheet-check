@@ -260,7 +260,7 @@ def get_bclconvert_data_list(samplesheet: SampleSheet) -> List:
     for index, data_row in samplesheet.data.iterrows():
         # Drop datadict
         data_dict = dict(data_row)
-        library_id = SAMPLE_REGEX_OBJS["topup"].sub('', data_dict["Sample_Name"])
+        library_id = SAMPLE_REGEX_OBJS["topup_or_rerun"].sub('', data_dict["Sample_Name"])
         # Add bclconvert settings
         data_dict.update(
             get_bclconvert_settings_by_library_id(
