@@ -109,8 +109,8 @@ class Sample:
             raise SampleNameFormatError
 
         # Check if the Sample_Name column is the library_id from the Sample_ID column ignoring the "_topup" / "_rerun"
-        clean_unique_id = SAMPLE_REGEX_OBJS["topup"].sub('', self.unique_id)
-        clean_sample_name = SAMPLE_REGEX_OBJS["topup"].sub('', self.sample_name)
+        clean_unique_id = SAMPLE_REGEX_OBJS["topup_or_rerun"].sub('', self.unique_id)
+        clean_sample_name = SAMPLE_REGEX_OBJS["topup_or_rerun"].sub('', self.sample_name)
         if not clean_unique_id.endswith(clean_sample_name):
             logger.error(f"Sample_Name ({self.sample_name}) is not the libraryID defined in the "
                          f"Sample_ID ({self.unique_id}) format")
@@ -174,7 +174,7 @@ class Sample:
         """
         library_id_column_var = METADATA_COLUMN_NAMES["library_id"]
         sample_id_column_var = METADATA_COLUMN_NAMES["sample_id"]
-        library_id_var = SAMPLE_REGEX_OBJS["topup"].sub('', self.library_id)
+        library_id_var = SAMPLE_REGEX_OBJS["topup_or_rerun"].sub('', self.library_id)
         sample_id_var = self.sample_id
 
         # Query for specific dataframe value
@@ -459,16 +459,16 @@ class SampleSheet:
         for sample in self:
 
             # check that the primary library for the topup exists
-            if SAMPLE_REGEX_OBJS["topup"].search(sample.library_id) is not None:
+            if SAMPLE_REGEX_OBJS["topup_or_rerun"].search(sample.library_id) is not None:
                 logger.info("{} is a top up sample. Investigating the previous sample".format(sample.unique_id))
-                orig_unique_id = SAMPLE_REGEX_OBJS["topup"].sub('', sample.unique_id)
+                orig_unique_id = SAMPLE_REGEX_OBJS["topup_or_rerun"].sub('', sample.unique_id)
                 unique_id_regex_obj = SAMPLE_REGEX_OBJS["unique_id"].match(orig_unique_id)
 
                 # Sample ID is the first group and the library ID is the second group
                 topup_sample_id = unique_id_regex_obj.group(1)
-                topup_library_id = unique_id_regex_obj.group(2)
+                topup_or_rerun_library_id = unique_id_regex_obj.group(2)
                 # Appending these original sample/library id to the search query
-                library_id_array.append(topup_library_id)
+                library_id_array.append(topup_or_rerun_library_id)
             else:
                 library_id_array.append(sample.library_id)
 
@@ -576,9 +576,9 @@ def check_metadata_correspondence(samplesheet):
             raise SampleNotFoundError
 
         # check that the primary library for the topup exists
-        if SAMPLE_REGEX_OBJS["topup"].search(sample.library_id) is not None:
+        if SAMPLE_REGEX_OBJS["topup_or_rerun"].search(sample.library_id) is not None:
             logger.info("{} is a top up sample. Investigating the previous sample".format(sample.unique_id))
-            orig_unique_id = SAMPLE_REGEX_OBJS["topup"].sub('', sample.unique_id)
+            orig_unique_id = SAMPLE_REGEX_OBJS["topup_or_rerun"].sub('', sample.unique_id)
             try:
                 # Recreate the original sample object
                 orig_sample = Sample(
