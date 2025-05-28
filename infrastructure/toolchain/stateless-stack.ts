@@ -9,7 +9,7 @@ export class StatelessStack extends cdk.Stack {
     super(scope, id, props);
 
     new DeploymentStackPipeline(this, 'DeploymentPipeline', {
-      githubBranch: 'main',
+      githubBranch: 'chore/upgrade-codepipeline-version',
       githubRepo: 'service-sample-sheet-check',
       stack: SampleSheetCheckerStack,
       stackName: 'SampleSheetCheckerStack',
@@ -20,6 +20,7 @@ export class StatelessStack extends cdk.Stack {
       },
       pipelineName: 'OrcaBus-StatelessSampleSheetCheck',
       cdkSynthCmd: ['pnpm install --frozen-lockfile --ignore-scripts', 'pnpm cdk synth'],
+      enableSlackNotification: false,
     });
   }
 }
