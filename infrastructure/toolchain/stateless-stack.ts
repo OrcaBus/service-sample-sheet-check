@@ -21,6 +21,7 @@ export class StatelessStack extends cdk.Stack {
       pipelineName: 'OrcaBus-StatelessSampleSheetCheck',
       cdkSynthCmd: ['pnpm install --frozen-lockfile --ignore-scripts', 'pnpm cdk synth'],
       enableSlackNotification: false,
+      reuseExistingArtifactBucket: true,
     });
   }
 }
