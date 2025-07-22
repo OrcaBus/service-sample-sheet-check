@@ -1,6 +1,6 @@
 import { getDefaultApiGatewayConfiguration } from '@orcabus/platform-cdk-constructs/api-gateway';
-import { StageName } from '@orcabus/platform-cdk-constructs/utils';
 import { SampleSheetCheckerStackProps } from './stack';
+import { StageName } from '@orcabus/platform-cdk-constructs/shared-config/accounts';
 
 export const getSampleSheetCheckerProps = (stage: StageName): SampleSheetCheckerStackProps => {
   const metadataDomainNameDict: Record<StageName, string> = {
