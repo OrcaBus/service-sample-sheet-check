@@ -221,7 +221,14 @@ V2_SAMPLESHEET_BCLCONVERT_ADAPTER_SETTINGS_BY_ASSAY_TYPE = {
         "adapter_read_1": ADAPTERS_BY_KIT["pcr_free_tagmentation"]["adapter_read_1"],
         "adapter_read_2": ADAPTERS_BY_KIT["pcr_free_tagmentation"]["adapter_read_2"],
     },
-    # Minimum Adapater Overlap for all samples set to 3
+    # iMthyl5BCap
+    "iMthyl5BCap:.*": {
+        # No adapters set up as discussed here
+        # https://illumina.gitbook.io/dna-methylation-prep/8yf1CuwpRlzpAWMSt3ib/sequencing-run-setup/novaseq-6000-run-planning
+        "adapter_read_1": "",
+        "adapter_read_2": ""
+    },
+    # Minimum Adapter Overlap for all samples set to 3
     ".*:.*": {
         "minimum_adapter_overlap": 3
     }
