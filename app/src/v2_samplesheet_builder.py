@@ -10,11 +10,11 @@ Convert the json to a v2 samplesheet
 import re
 from copy import deepcopy
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional
 from tempfile import NamedTemporaryFile
 import pandas as pd
+from pydantic.alias_generators import to_snake
 
-from src import camel_to_snake
 from src.samplesheet import SampleSheet, check_global_override_cycles
 from src.logger import get_logger
 from src.globals import (
@@ -26,6 +26,28 @@ from src.globals import (
 from v2_samplesheet_maker.functions.v2_samplesheet_writer import v2_samplesheet_writer
 
 logger = get_logger()
+
+
+def find_key(key_as_snake_case: str, dict_with_any_case_keys: Dict) -> Optional[str]:
+    """
+    Given a key in snake_case, find the corresponding key in a dictionary that may have keys in any case format.
+
+    Parameters:
+    key_as_snake_case (str): The key in snake_case to be found.
+    dict_with_any_case_keys (Dict): The dictionary with keys in any case format.
+
+    Returns: The corresponding key in the dictionary if found, else None.
+
+    """
+    try:
+        experiment_name_key = next(filter(
+            lambda key_iter: re.sub(r"\s+", "_", to_snake(key_iter)) == key_as_snake_case,
+            dict_with_any_case_keys.keys()
+        ))
+        return experiment_name_key
+    except StopIteration:
+        logger.warning(f"Could not find {key_as_snake_case} key in dict")
+        return None
 
 
 def get_bclconvert_adapter_setting_by_type_and_assay(sample_type: str, sample_assay: str, setting_name: str) -> str:
@@ -99,11 +121,25 @@ def get_samplesheet_header_dict(samplesheet: SampleSheet) -> Dict:
     # Update FileFormatVersion
     header_dict['file_format_version'] = '2'
 
-    # Convert Experiment Name to Run Name
-    header_dict['run_name'] = header_dict.pop('Experiment Name')
+    # Convert 'Experiment Name' to Run Name
+    experiment_name_key = find_key("experiment_name", header_dict)
+    if experiment_name_key is not None:
+        header_dict['run_name'] = header_dict[experiment_name_key]
 
-    # Convert Instrument Type to instrument_type
-    header_dict['instrument_type'] = header_dict.pop('Instrument Type')
+    # Convert 'Instrument Type' to instrument_type
+    instrument_type_key = find_key("instrument_type", header_dict)
+    if instrument_type_key is not None:
+        header_dict['instrument_type'] = header_dict[instrument_type_key]
+
+    # Convert 'Instrument Platform' to instrument_platform
+    instrument_platform_key = find_key("instrument_platform", header_dict)
+    if instrument_platform_key is not None:
+        header_dict['instrument_platform'] = header_dict[instrument_platform_key]
+
+    # Convert 'Index Orientation' to index_orientation
+    index_orientation_key = find_key("index_orientation", header_dict)
+    if index_orientation_key is not None:
+        header_dict['index_orientation'] = header_dict[index_orientation_key]
 
     return header_dict
 
