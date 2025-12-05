@@ -15,6 +15,7 @@ from tempfile import NamedTemporaryFile
 import pandas as pd
 from pydantic.alias_generators import to_snake
 
+from src import camel_to_snake
 from src.samplesheet import SampleSheet, check_global_override_cycles
 from src.logger import get_logger
 from src.globals import (
@@ -36,15 +37,16 @@ def find_key(key_as_snake_case: str, dict_with_any_case_keys: Dict) -> Optional[
     key_as_snake_case (str): The key in snake_case to be found.
     dict_with_any_case_keys (Dict): The dictionary with keys in any case format.
 
-    Returns: The corresponding key in the dictionary if found, else None.
+    Returns:
+        Optional[str]:  The corresponding key in the dictionary if found, else None.
 
     """
     try:
-        experiment_name_key = next(filter(
+        matching_key = next(filter(
             lambda key_iter: re.sub(r"\s+", "_", to_snake(key_iter)) == key_as_snake_case,
             dict_with_any_case_keys.keys()
         ))
-        return experiment_name_key
+        return matching_key
     except StopIteration:
         logger.warning(f"Could not find {key_as_snake_case} key in dict")
         return None
@@ -121,26 +123,17 @@ def get_samplesheet_header_dict(samplesheet: SampleSheet) -> Dict:
     # Update FileFormatVersion
     header_dict['file_format_version'] = '2'
 
-    # Convert 'Experiment Name' to Run Name
-    experiment_name_key = find_key("experiment_name", header_dict)
-    if experiment_name_key is not None:
-        header_dict['run_name'] = header_dict[experiment_name_key]
-
-    # Convert 'Instrument Type' to instrument_type
-    instrument_type_key = find_key("instrument_type", header_dict)
-    if instrument_type_key is not None:
-        header_dict['instrument_type'] = header_dict[instrument_type_key]
-
-    # Convert 'Instrument Platform' to instrument_platform
-    instrument_platform_key = find_key("instrument_platform", header_dict)
-    if instrument_platform_key is not None:
-        header_dict['instrument_platform'] = header_dict[instrument_platform_key]
-
-    # Convert 'Index Orientation' to index_orientation
-    index_orientation_key = find_key("index_orientation", header_dict)
-    if index_orientation_key is not None:
-        header_dict['index_orientation'] = header_dict[index_orientation_key]
-
+    # Convert the keys to the expected ones
+    key_mappings = {
+        "experiment_name": "run_name",
+        "instrument_type": "instrument_type",
+        "instrument_platform": "instrument_platform",
+        "index_orientation": "index_orientation"
+    }
+    for snake_key, target_key in key_mappings.items():
+        found_key = find_key(snake_key, header_dict)
+        if found_key is not None:
+            header_dict[target_key] = header_dict.pop(found_key)
     return header_dict
 
 
