@@ -694,10 +694,12 @@ def check_internal_override_cycles(samplesheet):
     :param samplesheet:
     :return:
     """
+    has_error = False
     for sample in samplesheet:
         # Check override cycles attribute exists
         if not sample.override_cycles:
-            logger.warning("Could not find override cycles for sample \"{}\"".format(sample.unique_id))
+            logger.error("Could not find override cycles for sample \"{}\"".format(sample.unique_id))
+            has_error = True
             continue
         index_count = 0
         for cycle_set in sample.override_cycles.split(";"):
@@ -713,19 +715,33 @@ def check_internal_override_cycles(samplesheet):
                 # Check against sample's i7 value
                 i7_length = len(sample.index.replace("N", ""))
                 if not i7_length == index_length:
-                    logger.warning(f"Sample '{sample.sample_id}' override cycle value '{sample.override_cycles}' "
-                                   f"does not match sample i7 '{sample.index}")
+                    logger.error(
+                        f"Sample '{sample.sample_id}' override cycle value '{sample.override_cycles}' "
+                        f"does not match sample i7 '{sample.index}"
+                    )
+                    has_error = True
             elif index_count == 2 and sample.index2 is not None and not sample.index2 == "":
                 # Check against samples' i5 value
                 i5_length = len(sample.index2.replace("N", ""))
                 if not i5_length == index_length:
-                    logger.warning(f"Sample '{sample.sample_id}' override cycle value '{sample.override_cycles}' "
-                                   f"does not match sample i5 '{sample.index2}")
+                    logger.error(
+                        f"Sample '{sample.sample_id}' override cycle value '{sample.override_cycles}' "
+                        f"does not match sample i5 '{sample.index2}"
+                    )
+                    has_error = True
         # Make sure that if sample.index2 is not None but the override cycles count
         # only made it to '1' then we throw a warning
         if index_count == 1 and sample.index2 is not None and not sample.index2 == "":
-            logger.warning(f"Override cycles '{sample.override_cycles}' suggests only one index "
-                           f"but sample '{sample.sample_id}' has a second index '{sample.index2}'")
+            logger.error(
+                f"Override cycles '{sample.override_cycles}' suggests only one index "
+                f"but sample '{sample.sample_id}' has a second index '{sample.index2}'"
+            )
+            has_error = True
+
+    if not has_error:
+        return
+
+    raise OverrideCyclesError("Found errors with override cycles internal consistency check")
 
 
 def check_global_override_cycles(samplesheet) -> List:
@@ -772,21 +788,25 @@ def check_global_override_cycles(samplesheet) -> List:
                                                 if len(sample.read_cycle_counts) == num_read_index]
             logger.error("The following samples have {} read/index sections: {}".
                          format(num_read_index, ", ".join(map(str, samples_with_this_num_read_index))))
-        raise OverrideCyclesError
+        raise OverrideCyclesError("Mismatch in number of override cycles sections between samples")
     elif len(num_read_index_per_sample) == 0:
         logger.error("Found no override cycles matches")
-        raise OverrideCyclesError
+        raise OverrideCyclesError("Found no override cycles matches")
     else:
-        logger.info("Override cycles check 1/2 complete - "
-                    "All samples have the correct number of override cycles sections - {}".
-                    format(list(num_read_index_per_sample)[0]))
+        logger.info(
+            "Override cycles check 1/2 complete - "
+            "All samples have the correct number of override cycles sections - {}".
+            format(list(num_read_index_per_sample)[0])
+        )
 
     # For each segment - check that the counts are the same
     section_cycle_counts = []
     for read_index in range(list(num_read_index_per_sample)[0]):
-        num_cycles_in_read_per_sample = set([sample.read_cycle_counts[read_index]
-                                             for sample in samplesheet
-                                             if not len(sample.read_cycle_counts) == 0])
+        num_cycles_in_read_per_sample = set([
+            sample.read_cycle_counts[read_index]
+            for sample in samplesheet
+            if not len(sample.read_cycle_counts) == 0
+        ])
         if len(num_cycles_in_read_per_sample) > 1:
             logger.error("Found an error with override cycles matches for read/index section {}".format(read_index + 1))
             for num_cycles in num_cycles_in_read_per_sample:
@@ -794,13 +814,16 @@ def check_global_override_cycles(samplesheet) -> List:
                     [sample.sample_id
                      for sample in samplesheet
                      if sample.read_cycle_counts[read_index] == num_cycles]
-                logger.error("The following samples have this this read count for this read index section: {}\n"
-                             "CycleCount: {}\n"
-                             "Samples: {}".
-                             format(read_index + 1,
-                                    num_cycles,
-                                    ", ".join(map(str, samples_with_this_cycle_count_in_this_read_index_section))))
-            raise OverrideCyclesError
+                logger.error(
+                    "The following samples have this read count for this read index section: {}\n"
+                    "CycleCount: {}\n"
+                    "Samples: {}".
+                    format(read_index + 1,
+                           num_cycles,
+                           ", ".join(map(str, samples_with_this_cycle_count_in_this_read_index_section))
+                    )
+                )
+            raise OverrideCyclesError("Mismatch in cycle counts across samples for read/index section {}".format(read_index + 1))
         else:
             section_cycle_counts.append(list(num_cycles_in_read_per_sample)[0])
     else:
