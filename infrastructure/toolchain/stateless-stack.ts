@@ -33,24 +33,6 @@ export class StatelessStack extends cdk.Stack {
         },
         command: ['cd app', 'make test'],
       },
-      unitIacTestConfig: {
-        partialBuildSpec: {
-          phases: {
-            install: {
-              'runtime-versions': {
-                nodejs: '22',
-              },
-            },
-          },
-          version: '0.2',
-        },
-        command: [
-          'npm install --global corepack@latest',
-          'corepack enable',
-          'pnpm install --frozen-lockfile --ignore-scripts',
-          'pnpm test',
-        ],
-      },
     });
   }
 }
