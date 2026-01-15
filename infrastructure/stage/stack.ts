@@ -5,7 +5,7 @@ import { HttpMethod, HttpRoute, HttpRouteKey } from 'aws-cdk-lib/aws-apigatewayv
 
 import path from 'path';
 import { Architecture, DockerImageCode, DockerImageFunction } from 'aws-cdk-lib/aws-lambda';
-import { RetentionDays } from 'aws-cdk-lib/aws-logs';
+import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
 import {
   OrcaBusApiGateway,
   OrcaBusApiGatewayProps,
@@ -32,11 +32,15 @@ export class SampleSheetCheckerStack extends Stack {
       props.apiGatewayConstructProps
     );
 
+    const logGroup = new LogGroup(this, 'EnvConfigLambdaLogGroup', {
+      retention: RetentionDays.TWO_WEEKS,
+    });
+
     const sscheckLambda = new DockerImageFunction(this, 'SSCheckLambda', {
       code: DockerImageCode.fromImageAsset(path.join(__dirname, '..', '..', 'app'), {
         file: 'lambda.Dockerfile',
       }),
-      logRetention: RetentionDays.TWO_WEEKS,
+      logGroup: logGroup,
       architecture: Architecture.ARM_64,
       timeout: Duration.seconds(28),
       memorySize: 1024,

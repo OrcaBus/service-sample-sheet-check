@@ -20,6 +20,37 @@ export class StatelessStack extends cdk.Stack {
       },
       pipelineName: 'OrcaBus-StatelessSampleSheetCheck',
       cdkSynthCmd: ['pnpm install --frozen-lockfile --ignore-scripts', 'pnpm cdk synth'],
+      unitAppTestConfig: {
+        partialBuildSpec: {
+          phases: {
+            install: {
+              'runtime-versions': {
+                python: '3.13',
+              },
+            },
+          },
+          version: '0.2',
+        },
+        command: ['cd app', 'make test'],
+      },
+      unitIacTestConfig: {
+        partialBuildSpec: {
+          phases: {
+            install: {
+              'runtime-versions': {
+                nodejs: '22',
+              },
+            },
+          },
+          version: '0.2',
+        },
+        command: [
+          'npm install --global corepack@latest',
+          'corepack enable',
+          'pnpm install --frozen-lockfile --ignore-scripts',
+          'pnpm test',
+        ],
+      },
     });
   }
 }
