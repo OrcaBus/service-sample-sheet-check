@@ -107,3 +107,10 @@ class FileContentError(Exception):
     File content is not as expected
     """
     pass
+
+
+class AuditStorageError(Exception):
+    """
+    Failed to store the submitted sample sheet in S3 for auditing
+    """
+    pass
