@@ -11,6 +11,7 @@ import {
   OrcaBusApiGateway,
   OrcaBusApiGatewayProps,
 } from '@orcabus/platform-cdk-constructs/api-gateway';
+import { NagSuppressions } from 'cdk-nag';
 
 export interface SampleSheetCheckerStackProps {
   /**
@@ -46,6 +47,13 @@ export class SampleSheetCheckerStack extends Stack {
       enforceSSL: true,
     });
 
+    NagSuppressions.addResourceSuppressions(auditBucket, [
+      {
+        id: 'AwsSolutions-S1',
+        reason: 'This bucket itself only stores audit copies of sample sheets.',
+      },
+    ]);
+
     const sscheckLambda = new DockerImageFunction(this, 'SSCheckLambda', {
       code: DockerImageCode.fromImageAsset(path.join(__dirname, '..', '..', 'app'), {
         file: 'lambda.Dockerfile',
@@ -62,6 +70,19 @@ export class SampleSheetCheckerStack extends Stack {
 
     // Lambda only needs to write audit copies, never read or delete them.
     auditBucket.grantPut(sscheckLambda);
+
+    NagSuppressions.addResourceSuppressions(
+      sscheckLambda,
+      [
+        {
+          id: 'AwsSolutions-IAM5',
+          reason:
+            'grantPut() on the audit bucket necessarily grants lambda access to a dedicated bucket.',
+          appliesTo: ['Action::s3:Abort*', 'Resource::<SampleSheetAuditBucket8ABB1C3E.Arn>/*'],
+        },
+      ],
+      true
+    );
 
     // add some integration to the http api gw
     const apiIntegration = new HttpLambdaIntegration('ApiLambdaIntegration', sscheckLambda);
