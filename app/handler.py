@@ -7,6 +7,7 @@ from src.checker import construct_sample_sheet, run_sample_sheet_content_check, 
     construct_logger
 from src.http import construct_body, construct_response
 from src.v2_samplesheet_builder import v1_to_v2_samplesheet
+from src.audit import store_sample_sheet_for_audit
 
 # Logging
 LOG_PATH = "/tmp/samplesheet_check.log"
@@ -50,9 +51,11 @@ def lambda_handler(event, context):
         response = construct_response(status_code=400, body=body, origin=origin)
         return response
     multipart_content = {}
+    multipart_filenames = {}
     for part in msg.get_payload():
-        multipart_content[part.get_param(
-            'name', header='content-disposition')] = part.get_payload(decode=True)
+        part_name = part.get_param('name', header='content-disposition')
+        multipart_content[part_name] = part.get_payload(decode=True)
+        multipart_filenames[part_name] = part.get_filename()
 
     key_list = list(multipart_content.keys())
     if "file" not in key_list or "logLevel" not in key_list:
@@ -64,6 +67,7 @@ def lambda_handler(event, context):
 
     file_data = multipart_content["file"]
     log_level = multipart_content["logLevel"].decode("utf-8")
+    original_filename = multipart_filenames.get("file")
 
     # Save file to temp file
     temporary_data = tempfile.NamedTemporaryFile(mode='w+', delete=False)
@@ -85,10 +89,17 @@ def lambda_handler(event, context):
         error_message = str(e)
         if not error_message:
             error_message = type(e).__name__
+
+        # Store a copy of the as-submitted sample sheet in S3 for auditing, with the
+        # FAIL outcome encoded in the filename.
+        store_sample_sheet_for_audit(file_data, "FAIL", original_filename)
+
         body = construct_body(check_status="FAIL", error_message=error_message, log_path=LOG_PATH,
                               v2_sample_sheet='')
         response = construct_response(status_code=200, body=body, origin=origin)
         return response
+
+    store_sample_sheet_for_audit(file_data, "PASS", original_filename)
 
     body = construct_body(check_status='PASS', log_path=LOG_PATH, v2_sample_sheet=v2_sample_sheet_str)
     response = construct_response(status_code=200, body=body, origin=origin)
